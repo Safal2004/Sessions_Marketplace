@@ -8,8 +8,11 @@ export default function Navbar() {
   const { user, isAuthenticated, isLoading, logout } = useAuthStore();
 
   const handleLogin = () => {
-    // Redirect directly to Django's social login endpoint
-    window.location.href = 'http://localhost:8000/auth/login/github/';
+    // Dynamically choose between localhost:8000 (local dev) and relative path (Docker Nginx proxy)
+    const redirectUrl = (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '3000')
+      ? 'http://localhost:8000/auth/login/github/'
+      : '/auth/login/github/';
+    window.location.href = redirectUrl;
   };
 
   return (

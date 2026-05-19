@@ -1,7 +1,23 @@
 import axios from 'axios';
 
+let apiURL = 'http://localhost:8000';
+
+if (typeof window !== 'undefined') {
+  // If in local browser dev on port 3000, request Django directly on port 8000
+  if (window.location.hostname === 'localhost' && window.location.port === '3000') {
+    apiURL = 'http://localhost:8000';
+  } else {
+    // In Dockerized production behind Nginx, request same host origin relatively
+    apiURL = window.location.origin;
+  }
+}
+
+if (process.env.NEXT_PUBLIC_API_URL) {
+  apiURL = process.env.NEXT_PUBLIC_API_URL;
+}
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: apiURL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,7 +54,7 @@ axiosInstance.interceptors.response.use(
         }
 
         // Call SimpleJWT refresh endpoint
-        const response = await axios.post('http://localhost:8000/auth/token/refresh/', {
+        const response = await axios.post(`${apiURL}/auth/token/refresh/`, {
           refresh: refreshToken,
         });
 

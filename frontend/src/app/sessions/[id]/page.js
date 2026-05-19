@@ -165,7 +165,10 @@ export default function SessionDetailPage() {
   };
 
   const handleLoginRedirect = () => {
-    window.location.href = 'http://localhost:8000/auth/login/github/';
+    const redirectUrl = (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '3000')
+      ? 'http://localhost:8000/auth/login/github/'
+      : '/auth/login/github/';
+    window.location.href = redirectUrl;
   };
 
   if (loading) {
