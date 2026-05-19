@@ -5,6 +5,22 @@ import { useParams, useRouter } from 'next/navigation';
 import axiosInstance from '../../../utils/axios';
 import useAuthStore from '../../../store/authStore';
 
+// Dynamic script loader for Razorpay checkout integration
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function SessionDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -61,22 +77,89 @@ export default function SessionDetailPage() {
     setBookingSuccess(false);
 
     try {
-      // POST payload must match BookingCreateSerializer expectation
-      await axiosInstance.post('/api/v1/bookings/', { session_id: session.id });
-      setBookingSuccess(true);
-      setIsAlreadyBooked(true);
+      // 1. Create order on backend
+      const res = await axiosInstance.post('/api/v1/payments/create-order/', { session_id: session.id });
       
-      // Refresh dynamic capacity metrics on successful reservation
-      await fetchSessionDetail();
+      // 2. Handle free bypass
+      if (res.data.is_free) {
+        setBookingSuccess(true);
+        setIsAlreadyBooked(true);
+        await fetchSessionDetail();
+        setBookingLoading(false);
+        return;
+      }
+
+      // 3. Load Razorpay gateway script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setBookingError('Unable to load Razorpay payment gateway script. Please check your network connection.');
+        setBookingLoading(false);
+        return;
+      }
+
+      // 4. Initialize Razorpay options configurations
+      const options = {
+        key: res.data.razorpay_key,
+        amount: res.data.amount,
+        currency: res.data.currency,
+        name: 'Sessions Marketplace',
+        description: `Booking Session: ${session.title}`,
+        order_id: res.data.order_id,
+        handler: async function (response) {
+          // This callback executes when payment completes!
+          // We send signature details immediately to verification endpoint
+          try {
+            setBookingLoading(true);
+            const verifyRes = await axiosInstance.post('/api/v1/payments/verify/', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              session_id: session.id
+            });
+            
+            if (verifyRes.data.status === 'success') {
+              setBookingSuccess(true);
+              setIsAlreadyBooked(true);
+              await fetchSessionDetail();
+            } else {
+              setBookingError('Payment transaction signature verification failed.');
+            }
+          } catch (verifyErr) {
+            console.error('Verification signature error:', verifyErr);
+            setBookingError(verifyErr.response?.data?.detail || 'Signature verification failed. Please try again.');
+          } finally {
+            setBookingLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.username || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#000000', // Sleek, modern professional theme
+        },
+        modal: {
+          ondismiss: function () {
+            setBookingLoading(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        setBookingError(resp.error.description || 'Payment transaction failed.');
+        setBookingLoading(false);
+      });
+      rzp.open();
+
     } catch (err) {
-      console.error('Failed to book session:', err);
-      // Grab validation errors returned from serializer
+      console.error('Failed to initiate payments order:', err);
+      // Grab validation errors returned from order creation view
       const errorMsg = err.response?.data?.session_id?.[0] || 
                        err.response?.data?.non_field_errors?.[0] || 
                        err.response?.data?.detail || 
-                       'Booking failed. Please try again.';
+                       'Order generation failed. Please try again.';
       setBookingError(errorMsg);
-    } finally {
       setBookingLoading(false);
     }
   };
@@ -258,7 +341,7 @@ export default function SessionDetailPage() {
               
               {/* Cost Indicator */}
               <div className="border-b border-zinc-100 dark:border-zinc-850 pb-5 mb-5">
-                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-5050 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-550 block uppercase tracking-wider">
                   Total Investment
                 </span>
                 <span className="text-3xl font-extrabold text-zinc-950 dark:text-white mt-1 block">
@@ -330,13 +413,13 @@ export default function SessionDetailPage() {
                     Session Fully Booked
                   </button>
                 ) : (
-                  /* Book Now button */
+                  /* Book Now / Pay Now button */
                   <button
                     onClick={handleBooking}
                     disabled={bookingLoading}
                     className="flex w-full h-11 items-center justify-center rounded-xl bg-zinc-950 px-6 text-sm font-bold text-white transition-all hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 cursor-pointer"
                   >
-                    {bookingLoading ? 'Reserving seat...' : 'Book Session Now'}
+                    {bookingLoading ? 'Processing Checkout...' : parseFloat(price) === 0 ? 'Book Free Session' : 'Pay & Reserve Seat'}
                   </button>
                 )
               ) : (

@@ -30,4 +30,5 @@ urlpatterns = [
     # API endpoints
     path('api/v1/', include('sessions_app.urls')),
     path('api/v1/', include('bookings.urls')),
+    path('api/v1/', include('payments.urls')),
 ]

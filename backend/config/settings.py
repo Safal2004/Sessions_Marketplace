@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'users',
     'sessions_app',
     'bookings',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,7 @@ SOCIAL_AUTH_PIPELINE = (
 SOCIAL_AUTH_GITHUB_KEY = env('SOCIAL_AUTH_GITHUB_KEY', default='')
 SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET', default='')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+
+# Razorpay Test Mode Configurations
+RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID', default='')
+RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET', default='')

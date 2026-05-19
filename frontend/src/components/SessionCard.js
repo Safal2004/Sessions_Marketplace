@@ -13,6 +13,8 @@ export default function SessionCard({ session }) {
     tags = []
   } = session;
 
+  const [imgSrc, setImgSrc] = React.useState(thumbnail_url);
+
   return (
     <Link 
       href={`/sessions/${id}`}
@@ -20,10 +22,11 @@ export default function SessionCard({ session }) {
     >
       {/* Thumbnail / Image Area */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        {thumbnail_url ? (
+        {imgSrc ? (
           <img 
-            src={thumbnail_url} 
+            src={imgSrc} 
             alt={title}
+            onError={() => setImgSrc(null)}
             className="h-full w-full object-cover grayscale opacity-90 transition-all duration-300 group-hover:scale-[1.02] group-hover:grayscale-0 group-hover:opacity-100"
             loading="lazy"
           />
