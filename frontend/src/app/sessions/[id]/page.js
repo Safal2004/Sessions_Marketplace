@@ -8,39 +8,77 @@ import useAuthStore from '../../../store/authStore';
 export default function SessionDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [bookingStatus, setBookingStatus] = useState(null); // 'loading', 'success', 'error'
+  
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+  const [isAlreadyBooked, setIsAlreadyBooked] = useState(false);
+
+  // Fetch session details on load
+  const fetchSessionDetail = async () => {
+    if (!params.id) return;
+    try {
+      const response = await axiosInstance.get(`/api/v1/sessions/${params.id}/`);
+      setSession(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load session details:', err);
+      setError('Failed to load session details. The resource might have been unpublished or removed.');
+    }
+  };
+
+  // Check if current user has already booked this session
+  const checkExistingBooking = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await axiosInstance.get('/api/v1/bookings/');
+      const userBookings = response.data.results || response.data;
+      const booked = userBookings.some(b => b.session && b.session.id === params.id && b.status === 'confirmed');
+      setIsAlreadyBooked(booked);
+    } catch (err) {
+      console.error('Failed to check user bookings:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchSessionDetail = async () => {
-      if (!params.id) return;
+    const initializeData = async () => {
       setLoading(true);
-      try {
-        const response = await axiosInstance.get(`/api/v1/sessions/${params.id}/`);
-        setSession(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to load session details:', err);
-        setError('Failed to load session details. The resource might have been unpublished or removed.');
-      } finally {
-        setLoading(false);
-      }
+      await Promise.all([fetchSessionDetail(), checkExistingBooking()]);
+      setLoading(false);
     };
 
-    fetchSessionDetail();
-  }, [params.id]);
+    initializeData();
+  }, [params.id, isAuthenticated]);
 
   const handleBooking = async () => {
     if (!isAuthenticated) return;
-    setBookingStatus('loading');
-    
-    // Simulate a realistic booking API process with high-quality micro-interaction
-    setTimeout(() => {
-      setBookingStatus('success');
-    }, 1200);
+    setBookingLoading(true);
+    setBookingError(null);
+    setBookingSuccess(false);
+
+    try {
+      // POST payload must match BookingCreateSerializer expectation
+      await axiosInstance.post('/api/v1/bookings/', { session_id: session.id });
+      setBookingSuccess(true);
+      setIsAlreadyBooked(true);
+      
+      // Refresh dynamic capacity metrics on successful reservation
+      await fetchSessionDetail();
+    } catch (err) {
+      console.error('Failed to book session:', err);
+      // Grab validation errors returned from serializer
+      const errorMsg = err.response?.data?.session_id?.[0] || 
+                       err.response?.data?.non_field_errors?.[0] || 
+                       err.response?.data?.detail || 
+                       'Booking failed. Please try again.';
+      setBookingError(errorMsg);
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   const handleLoginRedirect = () => {
@@ -52,7 +90,7 @@ export default function SessionDetailPage() {
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black font-sans">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900 dark:border-zinc-800 dark:border-t-zinc-100" />
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm">Loading session workspaces...</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">Loading session details...</p>
         </div>
       </div>
     );
@@ -85,8 +123,12 @@ export default function SessionDetailPage() {
     duration_minutes,
     max_participants,
     tags = [],
-    creator
+    creator,
+    remaining_seats,
+    is_full
   } = session;
+
+  const isCreatorOfSession = isAuthenticated && user && creator && creator.id === user.id;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans text-zinc-900 dark:text-zinc-50 py-12 px-6 sm:px-8">
@@ -106,7 +148,7 @@ export default function SessionDetailPage() {
           {/* Main Info Column (Left 2/3) */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Banner/Thumbnail (Minimal gray backdrop) */}
+            {/* Cover Image Banner */}
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
               {thumbnail_url ? (
                 <img 
@@ -152,7 +194,7 @@ export default function SessionDetailPage() {
 
             {/* Creator Profile Section */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/40">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-5050 mb-4">
                 Hosted by
               </h4>
               <div className="flex items-center gap-4">
@@ -181,15 +223,18 @@ export default function SessionDetailPage() {
               </div>
             </div>
 
-            {/* Meeting Link Details (Only visible to authenticated users as a premium touch) */}
-            {isAuthenticated && meeting_link && (
+            {/* Meeting Link (Only visible to booking attendees or creators) */}
+            {isAuthenticated && meeting_link && (isAlreadyBooked || isCreatorOfSession) && (
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900/10">
                 <div className="flex items-start gap-3">
                   <span className="text-lg">🔗</span>
                   <div className="space-y-1">
                     <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">Private Meeting Link</h4>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      This session will be conducted online. Once booked, you can join using the link below:
+                      {isCreatorOfSession 
+                        ? 'As the host, you can launch the online session workspace using the link below:' 
+                        : 'Your reservation is confirmed! You can join the online workspace using the link below:'
+                      }
                     </p>
                     <a 
                       href={meeting_link} 
@@ -206,14 +251,14 @@ export default function SessionDetailPage() {
 
           </div>
 
-          {/* Sticky Booking Sidebar (Right 1/3) */}
+          {/* Sticky Booking Sidebar */}
           <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
             
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
               
               {/* Cost Indicator */}
               <div className="border-b border-zinc-100 dark:border-zinc-850 pb-5 mb-5">
-                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-5050 block uppercase tracking-wider">
                   Total Investment
                 </span>
                 <span className="text-3xl font-extrabold text-zinc-950 dark:text-white mt-1 block">
@@ -227,35 +272,71 @@ export default function SessionDetailPage() {
                   <span className="text-zinc-400">Duration</span>
                   <span className="font-semibold text-zinc-900 dark:text-white">{duration_minutes} Minutes</span>
                 </div>
+                
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Capacity</span>
-                  <span className="font-semibold text-zinc-900 dark:text-white">{max_participants} {max_participants === 1 ? 'Attendee' : 'Attendees'} max</span>
+                  <span className="font-semibold text-zinc-900 dark:text-white">{max_participants} Max Capacity</span>
                 </div>
+
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400">Format</span>
-                  <span className="font-semibold text-zinc-900 dark:text-white">Online Interaction</span>
+                  <span className="text-zinc-400">Remaining Seats</span>
+                  {is_full ? (
+                    <span className="font-bold text-rose-500">Fully Booked</span>
+                  ) : (
+                    <span className={`font-bold ${remaining_seats <= 1 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                      {remaining_seats} {remaining_seats === 1 ? 'seat' : 'seats'} left
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Booking CTA trigger buttons */}
+              {/* Error messages if any */}
+              {bookingError && (
+                <div className="rounded-xl bg-rose-50/50 border border-rose-200/50 p-4 text-center dark:bg-rose-950/10 dark:border-rose-900/20 text-rose-600 dark:text-rose-450 text-xs font-semibold mb-4 leading-normal">
+                  {bookingError}
+                </div>
+              )}
+
+              {/* Booking CTA triggers */}
               {isAuthenticated ? (
-                bookingStatus === 'success' ? (
+                bookingSuccess || isAlreadyBooked ? (
                   /* Success Booking Message */
-                  <div className="rounded-xl bg-emerald-50/50 border border-emerald-200/50 p-4 text-center dark:bg-emerald-950/10 dark:border-emerald-900/20">
-                    <span className="text-lg">🎉</span>
-                    <h5 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 mt-1">Booking Confirmed!</h5>
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5">
-                      Check your email/profile for joining credentials.
-                    </p>
+                  <div className="space-y-3">
+                    <div className="rounded-xl bg-emerald-50/50 border border-emerald-200/50 p-4 text-center dark:bg-emerald-950/10 dark:border-emerald-900/20">
+                      <span className="text-lg">🎉</span>
+                      <h5 className="text-sm font-bold text-emerald-800 dark:text-emerald-400 mt-1">Already Booked</h5>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-500 mt-0.5 leading-normal">
+                        Your seat is securely reserved for this session! Check your Dashboard.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => router.push('/dashboard')}
+                      className="flex w-full h-11 items-center justify-center rounded-xl border border-zinc-200 text-zinc-700 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:bg-zinc-900/20 dark:hover:bg-zinc-900/60 text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Go to Dashboard
+                    </button>
                   </div>
+                ) : isCreatorOfSession ? (
+                  /* Creators cannot book own session message */
+                  <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-center dark:bg-zinc-900/20 dark:border-zinc-800 text-xs text-zinc-550 dark:text-zinc-400 leading-normal">
+                    💻 You are the host creator of this session. Manage attendees inside your Creator dashboard.
+                  </div>
+                ) : is_full ? (
+                  /* Session full state */
+                  <button
+                    disabled
+                    className="flex w-full h-11 items-center justify-center rounded-xl bg-zinc-200 text-zinc-400 px-6 text-sm font-bold cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-650"
+                  >
+                    Session Fully Booked
+                  </button>
                 ) : (
                   /* Book Now button */
                   <button
                     onClick={handleBooking}
-                    disabled={bookingStatus === 'loading'}
+                    disabled={bookingLoading}
                     className="flex w-full h-11 items-center justify-center rounded-xl bg-zinc-950 px-6 text-sm font-bold text-white transition-all hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 cursor-pointer"
                   >
-                    {bookingStatus === 'loading' ? 'Scheduling session...' : 'Book Session Now'}
+                    {bookingLoading ? 'Reserving seat...' : 'Book Session Now'}
                   </button>
                 )
               ) : (
@@ -284,7 +365,7 @@ export default function SessionDetailPage() {
             </div>
 
             {/* Platform Guarantees info card */}
-            <div className="rounded-2xl border border-zinc-200 bg-white/40 p-5 dark:border-zinc-800 dark:bg-zinc-900/10 text-xs text-zinc-400 dark:text-zinc-500 leading-normal">
+            <div className="rounded-2xl border border-zinc-200 bg-white/40 p-5 dark:border-zinc-800 dark:bg-zinc-900/10 text-xs text-zinc-400 dark:text-zinc-550 leading-normal">
               🛡️ **Marketplace Guarantee:** Your booking is protected. Cancel up to 24 hours prior to the session for a full credit refund.
             </div>
 

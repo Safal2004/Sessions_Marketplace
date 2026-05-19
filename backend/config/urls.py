@@ -29,4 +29,5 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # API endpoints
     path('api/v1/', include('sessions_app.urls')),
+    path('api/v1/', include('bookings.urls')),
 ]

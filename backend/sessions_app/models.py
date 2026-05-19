@@ -56,3 +56,15 @@ class Session(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.creator.username}"
+
+    @property
+    def confirmed_bookings_count(self):
+        return self.bookings.filter(status='confirmed').count()
+
+    @property
+    def remaining_seats(self):
+        return max(0, self.max_participants - self.confirmed_bookings_count)
+
+    @property
+    def is_full(self):
+        return self.remaining_seats <= 0

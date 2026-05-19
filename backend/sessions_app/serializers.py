@@ -26,7 +26,8 @@ class SessionListSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'creator', 'title', 'thumbnail_url', 
             'price', 'duration_minutes', 'max_participants', 
-            'is_published', 'tags', 'created_at'
+            'is_published', 'tags', 'created_at',
+            'remaining_seats', 'is_full'
         )
         read_only_fields = fields
 
@@ -48,7 +49,8 @@ class SessionDetailSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'creator', 'title', 'description', 'thumbnail_url', 
             'meeting_link', 'price', 'duration_minutes', 'max_participants', 
-            'is_published', 'tags', 'created_at', 'updated_at'
+            'is_published', 'tags', 'created_at', 'updated_at',
+            'remaining_seats', 'is_full'
         )
         read_only_fields = fields
 
