@@ -97,16 +97,16 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6 font-sans">
-      
+
       {/* Modal Container */}
       <div className="w-full max-w-xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-zinc-950 overflow-y-auto max-h-[85vh]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900 pb-4 mb-5">
           <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
             {initialData ? 'Edit Hosted Session' : 'Host a New Session'}
           </h3>
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 text-sm bg-transparent border-none cursor-pointer"
@@ -122,12 +122,12 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-sm">
-          
+
           {/* Title */}
           <div className="space-y-1">
             <label className="font-semibold text-zinc-700 dark:text-zinc-300">Session Title *</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="title"
               required
               value={formData.title}
@@ -141,7 +141,7 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
           {/* Description */}
           <div className="space-y-1">
             <label className="font-semibold text-zinc-700 dark:text-zinc-300">Description *</label>
-            <textarea 
+            <textarea
               name="description"
               required
               rows={4}
@@ -157,8 +157,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="font-semibold text-zinc-700 dark:text-zinc-300">Meeting URL</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 name="meeting_link"
                 value={formData.meeting_link}
                 onChange={handleChange}
@@ -170,8 +170,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
 
             <div className="space-y-1">
               <label className="font-semibold text-zinc-700 dark:text-zinc-300">Thumbnail Cover URL</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 name="thumbnail_url"
                 value={formData.thumbnail_url}
                 onChange={handleChange}
@@ -186,8 +186,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
           <div className="grid gap-4 grid-cols-3">
             <div className="space-y-1">
               <label className="font-semibold text-zinc-700 dark:text-zinc-300">Price (USD)</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="price"
                 min="0"
                 step="0.01"
@@ -201,8 +201,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
 
             <div className="space-y-1">
               <label className="font-semibold text-zinc-700 dark:text-zinc-300">Duration (m)</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="duration_minutes"
                 min="1"
                 required
@@ -215,8 +215,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
 
             <div className="space-y-1">
               <label className="font-semibold text-zinc-700 dark:text-zinc-300">Capacity (p)</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="max_participants"
                 min="1"
                 required
@@ -231,8 +231,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
           {/* Tags */}
           <div className="space-y-1">
             <label className="font-semibold text-zinc-700 dark:text-zinc-300">Topics / Tags (comma-separated)</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="tags"
               value={formData.tags}
               onChange={handleChange}
@@ -244,8 +244,8 @@ export default function SessionModal({ isOpen, onClose, onSuccess, initialData =
 
           {/* Publish Checkbox */}
           <div className="flex items-center gap-2 pt-2">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               name="is_published"
               id="is_published"
               checked={formData.is_published}

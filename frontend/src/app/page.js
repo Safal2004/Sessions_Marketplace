@@ -18,7 +18,7 @@ export default function Home() {
     const fetchSessions = async () => {
       setLoading(true);
       try {
-        const url = searchQuery 
+        const url = searchQuery
           ? `/api/v1/sessions/?search=${encodeURIComponent(searchQuery)}`
           : '/api/v1/sessions/';
         const response = await axiosInstance.get(url);
@@ -48,7 +48,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans text-zinc-900 dark:text-zinc-50">
-      
+
       {/* Hero Header Area (Sophisticated, Minimal, Human-Made) */}
       <header className="border-b border-zinc-200 bg-white/40 dark:border-zinc-900 dark:bg-zinc-950/20 py-16 px-6 sm:px-8">
         <div className="mx-auto max-w-7xl">
@@ -76,24 +76,24 @@ export default function Home() {
 
       {/* Catalog Search & Grid Workspace */}
       <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8 space-y-8">
-        
+
         {/* Search Toolbar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 dark:border-zinc-900 pb-6">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
             Available Sessions
           </h2>
-          
+
           <form onSubmit={handleSearchSubmit} className="flex w-full max-w-md gap-2">
             <div className="relative w-full">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search by session title or topics..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="h-10 w-full rounded-xl border border-zinc-200 bg-white pl-4 pr-10 text-sm transition-all focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900/60 dark:focus:border-zinc-700"
               />
               {searchTerm && (
-                <button 
+                <button
                   type="button"
                   onClick={handleClearSearch}
                   className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs bg-transparent cursor-pointer"
@@ -102,7 +102,7 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <button 
+            <button
               type="submit"
               className="h-10 rounded-xl bg-zinc-950 px-4 text-xs font-bold text-white transition-all hover:bg-zinc-800 dark:bg-zinc-100 dark:text-black dark:hover:bg-zinc-200 cursor-pointer"
             >
@@ -129,7 +129,7 @@ export default function Home() {
           <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-6 text-center dark:border-rose-900/20 dark:bg-rose-950/10">
             <span className="text-xl">⚠️</span>
             <p className="mt-2 text-sm font-semibold text-rose-600 dark:text-rose-400">{error}</p>
-            <button 
+            <button
               onClick={() => setSearchQuery('')}
               className="mt-4 text-xs font-bold text-zinc-600 hover:text-zinc-950 underline dark:text-zinc-400 dark:hover:text-white bg-transparent cursor-pointer"
             >
