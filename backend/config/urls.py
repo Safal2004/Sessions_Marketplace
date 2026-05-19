@@ -27,4 +27,6 @@ urlpatterns = [
     path('auth/me/', MeView.as_view(), name='auth_me'),
     # JWT Token Refresh View
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # API endpoints
+    path('api/v1/', include('sessions_app.urls')),
 ]
