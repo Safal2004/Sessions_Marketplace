@@ -18,6 +18,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
+USE_X_FORWARDED_HOST = True
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
@@ -185,3 +190,5 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 # Razorpay Test Mode Configurations
 RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET', default='')
+
+# Reverse Proxy settings to respect Nginx SSL/HTTPS termination

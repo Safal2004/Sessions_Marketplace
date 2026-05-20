@@ -9,23 +9,23 @@ A full-stack sessions marketplace where creators can host technical mentoring se
 
 ## Platform Walkthrough & Screenshots
 
-Below are placeholders where you can view or insert platform screenshots showing the sleek user experience:
+Below are the screenshots showing the sleek user experience of the Sessions Marketplace platform:
 
 * **Catalog Homepage**  
-  *Place image here: `/screenshots/homepage.png`*  
- Homepage showing searchable sessions, creator cards, and booking actions.
+  ![Catalog Homepage](/screenshots/homepage.png)  
+  Homepage showing searchable sessions, creator cards, and booking actions.
 
-* **Session Details & Payment Flow**  
-  *Place image here: `/screenshots/session_detail.png`*  
-  Session details page with pricing, capacity info, and Razorpay checkout flow.
+* **Session Details**  
+  ![Session Details](/screenshots/sessions_details.png)  
+  Session details page with pricing, capacity info, and Razorpay booking sidebar.
 
-* **Attendee Reservation Dashboard**  
-  *Place image here: `/screenshots/attendee_dashboard.png`*  
-  Dashboard for managing bookings, viewing statuses, and joining sessions.
+* **Attendee & Creator Dashboards**  
+  ![User and Creator Dashboards](/screenshots/users_dashboard.png)  
+  Sleek user and host console for managing active bookings, schedules, and earnings.
 
-* **Creator Management Dashboard**  
-  *Place image here: `/screenshots/creator_dashboard.png`*  
-  Creator dashboard for managing sessions, viewing attendees, and checking earnings.
+* **Razorpay Payment Flow**  
+  ![Razorpay Payments](/screenshots/payments.png)  
+  Fully integrated test-mode sandbox checkout popup verifying payment signatures.
 
 ---
 
