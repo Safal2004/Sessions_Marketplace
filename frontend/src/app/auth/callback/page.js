@@ -18,10 +18,14 @@ function CallbackContent() {
       // Store tokens and set authentication state
       setAuth(access, refresh);
       
-      // Fetch user profile and redirect to home page
+      // Fetch user profile and redirect to home page or onboarding
       fetchCurrentUser().then((user) => {
         if (user) {
-          router.replace('/');
+          if (!user.has_completed_onboarding) {
+            router.replace('/onboarding');
+          } else {
+            router.replace('/');
+          }
         } else {
           router.replace('/?error=profile_fetch_failed');
         }

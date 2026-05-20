@@ -6,14 +6,19 @@ import useAuthStore from '../store/authStore';
 
 export default function ProtectedRoute({ children }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
 
   useEffect(() => {
     // If auth state is fully loaded and user is unauthenticated, redirect to home
-    if (!isLoading && !isAuthenticated) {
-      router.replace('/?error=unauthorized');
+    // If authenticated but onboarding is incomplete, redirect to /onboarding
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace('/?error=unauthorized');
+      } else if (user && !user.has_completed_onboarding) {
+        router.replace('/onboarding');
+      }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, router]);
 
   // Show a professional, smooth loader while loading auth state
   if (isLoading) {

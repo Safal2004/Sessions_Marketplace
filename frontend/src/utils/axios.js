@@ -42,11 +42,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Intercept 401 Unauthorized errors and prevent infinite retry loops
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
@@ -60,7 +60,7 @@ axiosInstance.interceptors.response.use(
 
         const newAccessToken = response.data.access;
         localStorage.setItem('accessToken', newAccessToken);
-        
+
         // Re-attempt original request with the new access token
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
@@ -68,7 +68,7 @@ axiosInstance.interceptors.response.use(
         // Clear stored tokens and redirect to login if refresh fails
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        
+
         if (typeof window !== 'undefined') {
           window.location.href = '/?error=session_expired';
         }

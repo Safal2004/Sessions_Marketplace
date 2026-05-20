@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from users.views import MeView
+from users.views import MeView, CompleteOnboardingView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +25,8 @@ urlpatterns = [
     path('auth/', include('social_django.urls', namespace='social')),
     # JWT Profile View
     path('auth/me/', MeView.as_view(), name='auth_me'),
+    # Onboarding Completion Endpoint
+    path('auth/complete-onboarding/', CompleteOnboardingView.as_view(), name='complete_onboarding'),
     # JWT Token Refresh View
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # API endpoints

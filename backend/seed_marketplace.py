@@ -446,7 +446,8 @@ def run_seeder(reset_all=False):
                 'last_name': cd['last_name'],
                 'email': cd['email'],
                 'avatar_url': cd['avatar_url'],
-                'role': cd['role']
+                'role': cd['role'],
+                'has_completed_onboarding': True
             }
         )
         if created:
@@ -468,7 +469,8 @@ def run_seeder(reset_all=False):
                 'first_name': ad['first_name'],
                 'last_name': ad['last_name'],
                 'email': ad['email'],
-                'role': ad['role']
+                'role': ad['role'],
+                'has_completed_onboarding': True
             }
         )
         if created:

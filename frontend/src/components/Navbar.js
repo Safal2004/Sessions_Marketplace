@@ -31,8 +31,8 @@ export default function Navbar() {
         {/* Auth Actions & Navigation Area */}
         <div className="flex items-center gap-6">
           {isAuthenticated && (
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="text-sm font-semibold text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50 no-underline"
             >
               Dashboard
@@ -50,14 +50,13 @@ export default function Navbar() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 {/* Custom Role Badge */}
-                <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${
-                  user.role === 'creator' 
-                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' 
-                    : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
-                }`}>
+                <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${user.role === 'creator'
+                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                  : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
+                  }`}>
                   {user.role}
                 </span>
-                
+
                 {/* Username */}
                 <span className="hidden text-sm font-semibold text-zinc-700 dark:text-zinc-300 sm:block">
                   {user.username}
@@ -65,9 +64,9 @@ export default function Navbar() {
 
                 {/* Avatar Image */}
                 {user.avatar_url ? (
-                  <img 
-                    src={user.avatar_url} 
-                    alt={user.username} 
+                  <img
+                    src={user.avatar_url}
+                    alt={user.username}
                     className="h-9 w-9 rounded-full object-cover border border-zinc-200/80 dark:border-zinc-800"
                   />
                 ) : (
